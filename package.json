@@ -2,7 +2,7 @@
   "name": "path-mapper",
   "displayName": "Path Mapper",
   "description": "Mapping paths on link click from terminal",
-  "publisher": "JaeHo Song",
+  "publisher": "JaeHoSong",
   "repository": {
     "type": "git",
     "url": "https://github.com/thruthesky/path-mapper"
@@ -22,7 +22,28 @@
         "command": "path-mapper.pathMapper",
         "title": "Path Mapper"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "PathMapper",
+      "properties": {
+        "path-mapper.match": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": "/docker/sonub-backend",
+          "description": "Match part of the page. ex) /docker/sonub-backend"
+        },
+        "path-mapper.replace": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": "/Users/thruthesky/docker/docker-sonub/sonub-backend",
+          "description": "Replace for the matched part. ex) /Users/thruthesky/apps/sonub"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

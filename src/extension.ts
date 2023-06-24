@@ -1,6 +1,11 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+
 import * as vscode from 'vscode';
+
+interface CustomTerminalLink extends vscode.TerminalLink {
+	data: string;
+}
 
 // 사용자가 Command 를 실행해서 Activate 할 때, 한번만 실행된다.
 export function activate(context: vscode.ExtensionContext) {
@@ -15,8 +20,34 @@ export function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('path-mapper.pathMapper', () => {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Path Mapper!');
+		vscode.window.showInformationMessage('Path Mapper is installed!');
 	});
+
+	vscode.window.registerTerminalLinkProvider({
+		provideTerminalLinks: (context: vscode.TerminalLinkContext, token: vscode.CancellationToken) => {
+			console.log("context.line; ", context.line);
+
+			if (context.line.indexOf('/docker/sonub-backend') > -1) {
+				return [{
+					startIndex: 0,
+					length: context.line.length,
+					tooltip: 'Click to open file',
+					data: context.line,
+				}];
+			}
+			return [];
+		},
+		handleTerminalLink: (link: CustomTerminalLink) => {
+			const matching: string = vscode.workspace.getConfiguration().get('path-mapper.match') ?? '';
+			const replacing = vscode.workspace.getConfiguration().get('path-mapper.replace');
+
+			let path = replacing + link.data.split(matching)[1];
+			path = path.split(/\:| /g)[0];
+
+			vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(path));
+		}
+	});
+
 
 	context.subscriptions.push(disposable);
 }
