@@ -3,6 +3,10 @@
   "displayName": "Path Mapper",
   "description": "Mapping paths on link click from terminal",
   "publisher": "JaeHo Song",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thruthesky/path-mapper"
+  },
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.79.0"
