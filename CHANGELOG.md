@@ -3,6 +3,11 @@
 All notable changes to the "path-mapper" extension will be documented in this file.
 
 
+## 0.0.3
+
+- Update document.
+
+
 ## 0.0.2
 
 - Adding match and replace option.
