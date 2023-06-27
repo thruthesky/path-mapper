@@ -44,6 +44,8 @@ export function activate(context: vscode.ExtensionContext) {
 			let path = replacing + link.data.split(matching)[1];
 			path = path.split(/\:| /g)[0];
 
+			console.log(matching, replacing, path);
+
 			vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(path));
 		}
 	});
