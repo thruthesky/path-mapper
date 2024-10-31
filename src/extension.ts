@@ -27,26 +27,38 @@ export function activate(context: vscode.ExtensionContext) {
 		provideTerminalLinks: (context: vscode.TerminalLinkContext, token: vscode.CancellationToken) => {
 			console.log("context.line; ", context.line);
 
-			if (context.line.indexOf('/docker/sonub-backend') > -1) {
+			
 				return [{
 					startIndex: 0,
 					length: context.line.length,
 					tooltip: 'Click to open file',
 					data: context.line,
 				}];
-			}
-			return [];
+				
 		},
 		handleTerminalLink: (link: CustomTerminalLink) => {
-			const matching: string = vscode.workspace.getConfiguration().get('path-mapper.match') ?? '';
-			const replacing = vscode.workspace.getConfiguration().get('path-mapper.replace');
 
-			let path = replacing + link.data.split(matching)[1];
-			path = path.split(/\:| /g)[0];
+			const mapper: Array<{match: string, replace: string}> = vscode.workspace.getConfiguration().get('path-mapper') ?? [];
 
-			console.log(matching, replacing, path);
+			// console.log('mapper[0]: ', mapper[0]);
+			// console.log('mapper[1]: ', mapper[1]);
+			const path = link.data;
+			// console.log('path: ', path);
+			const found: number = mapper.findIndex((e) => {
+				// console.log('match: ', e.match);
+				return path.indexOf(e.match) > -1;
+			});
+			// console.log('found: ', found);
+			if ( found === -1 ) {
+				vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(path));
+				return;
+			}
+			const map = mapper[found];
+			// console.log('map: ', map);
+			const replaced = path.replace(map.match, map.replace);
+			// console.log('replaced: ', replaced);
+			vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(replaced));
 
-			vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(path));
 		}
 	});
 

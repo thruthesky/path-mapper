@@ -13,3 +13,21 @@ Use this extension to map(replace) the path that is clicked on the terminal.
     "path-mapper.replace": "... mapping path for the match ...",
 }
 ```
+
+
+## How to use
+
+```json
+{
+    "path-mapper": [
+        {
+            "match": "abc",
+            "replace": "def"
+        },
+        {
+            "match": "hij",
+            "replace": "klm"
+        }
+    ]
+}
+```

@@ -7,14 +7,16 @@
     "type": "git",
     "url": "https://github.com/thruthesky/path-mapper"
   },
-  "version": "0.0.4",
+  "version": "0.0.5",
   "engines": {
     "vscode": "^1.79.0"
   },
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -26,21 +28,11 @@
     "configuration": {
       "title": "PathMapper",
       "properties": {
-        "path-mapper.match": {
+        "path-mapper": {
           "type": [
-            "string",
-            "null"
+            "array"
           ],
-          "default": "/docker/sonub-backend",
-          "description": "Match part of the page. ex) /docker/sonub-backend"
-        },
-        "path-mapper.replace": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": "/Users/thruthesky/docker/docker-sonub/sonub-backend",
-          "description": "Replace for the matched part. ex) /Users/thruthesky/apps/sonub"
+          "description": "[ {match: ..., replace: ...}, {match: ..., replace: ...} ]"
         }
       }
     }
