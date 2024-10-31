@@ -1,33 +1,28 @@
 # Path Mapper
 
-Use this extension to map(replace) the path that is clicked on the terminal.
+This VSCode extension maps (replaces) paths clicked in the terminal.
 
-- When the path of the file is `/tmp/xyz/file.txt`, and you want to open the file `file.txt` in `/abc/def` folder,
-  - then, put the `/tmp/xzy` in `path-mapper.match` option, and `/abc/def` in `path-match.replace` option.
+## Settings
 
-## How to use
-
-```json
-{
-    "path-mapper.match": "... path to match on terminal ...",
-    "path-mapper.replace": "... mapping path for the match ...",
-}
-```
-
-
-## How to use
+Add the following to your settings:
 
 ```json
-{
-    "path-mapper": [
-        {
-            "match": "abc",
-            "replace": "def"
-        },
-        {
-            "match": "hij",
-            "replace": "klm"
-        }
-    ]
-}
+"path-mapper": [
+  {
+    "match": "lib/",
+    "replace": "rary/"
+  },
+  {
+    "match": "test/",
+    "replace": "temp/"
+  },
+  {
+    "match": "func1/",
+    "replace": "func2/"
+  }
+]
 ```
+
+### Example
+
+Clicking a path with `lib` will replace `lib` with `rary`. For example, `/Users/abc/lib/abc.txt` becomes `/Users/abc/rary/abc.txt`.
