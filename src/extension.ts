@@ -25,38 +25,84 @@ export function activate(context: vscode.ExtensionContext) {
 
 	vscode.window.registerTerminalLinkProvider({
 		provideTerminalLinks: (context: vscode.TerminalLinkContext, token: vscode.CancellationToken) => {
-			console.log("context.line; ", context.line);
+
+			// [line] is the text of a line that is displayed in the terminal when the user hovers over the link
+			const line: string = context.line;
+			console.log("context.line; ", line);
+
+			// [startIndex] is the index of the start of the link within [line]
+			// [length] is the length of the each link within [line]. It is splitted into multiple links by blank space.
+			// [tooltip] is the text displayed in the hover tooltip
+			// [data] is the data that will be passed to [handleTerminalLink] when the link is clicked
+			// return an array of links
+			const links = line.split(' ').map((word, index) => {
+				return {
+					startIndex: context.line.indexOf(word),
+					length: word.length,
+					tooltip: 'Click to open file: ' + word,
+					data: word,
+				};
+			});
+
+			// remove the element of the data which is a path if it is not an absolute path from the links map object
+			const absoluteLinks = links.filter((e) => {
+				if (e.data.indexOf('/') !== 0) {
+					return false;
+				}
+				return true;
+			});
+			
+
+			return absoluteLinks;
+
+
 
 			
-				return [{
-					startIndex: 0,
-					length: context.line.length,
-					tooltip: 'Click to open file',
-					data: context.line,
-				}];
+				// return [{
+				// 	startIndex: 0,
+				// 	length: context.line.length,
+				// 	tooltip: 'Click to open file',
+				// 	data: context.line,
+				// }];
 				
 		},
-		handleTerminalLink: (link: CustomTerminalLink) => {
+		handleTerminalLink: async (link: CustomTerminalLink) => {
+
+			// [link] is the link that was clicked
+			// [link.data] is the data that was passed to the link when it was created
+			console.log('--> link:', link);
+			console.log('--> vscode.workspace:', vscode.workspace);
+			console.log('--> getAbsolutePath(link.data)');
 
 			const mapper: Array<{match: string, replace: string}> = vscode.workspace.getConfiguration().get('path-mapper') ?? [];
 
 			// console.log('mapper[0]: ', mapper[0]);
 			// console.log('mapper[1]: ', mapper[1]);
-			const path = link.data;
+			let path = link.data;
 			// console.log('path: ', path);
+
+			
+
+
 			const found: number = mapper.findIndex((e) => {
 				// console.log('match: ', e.match);
+				// return -1 if the path is not absoulte path
+				if (path.indexOf('/') !== 0) {
+					return -1;
+				}
 				return path.indexOf(e.match) > -1;
 			});
+
 			// console.log('found: ', found);
+			let replaced: string = '';
 			if ( found === -1 ) {
-				vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(path));
-				return;
-			}
+				replaced = path;
+			} else {
 			const map = mapper[found];
 			// console.log('map: ', map);
-			const replaced = path.replace(map.match, map.replace);
-			// console.log('replaced: ', replaced);
+			 replaced = path.replace(map.match, map.replace);
+			}
+			console.log('replaced: ', '[' + replaced + ']');
 			vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(replaced));
 
 		}
@@ -64,6 +110,22 @@ export function activate(context: vscode.ExtensionContext) {
 
 
 	context.subscriptions.push(disposable);
+}
+
+// Generate an absolute path from a relative path
+ function getAbsolutePath(fileUri: string) {
+	// Get the current workspace folder
+	const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+
+	// If there is no workspace folder, return the original path
+	if (!workspaceFolder) {
+		return fileUri;
+	}
+
+	// Get the absolute path of the file
+	const absolutePath = vscode.Uri.joinPath(workspaceFolder.uri, fileUri).fsPath;
+
+	return absolutePath;
 }
 
 // This method is called when your extension is deactivated
