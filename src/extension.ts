@@ -23,12 +23,13 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage('Path Mapper is installed!');
 	});
 
+	const workspaceFolder: string = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? "";
+
 	vscode.window.registerTerminalLinkProvider({
 		provideTerminalLinks: (context: vscode.TerminalLinkContext, token: vscode.CancellationToken) => {
 
 			// [line] is the text of a line that is displayed in the terminal when the user hovers over the link
 			const line: string = context.line;
-			console.log("context.line; ", line);
 
 			// [startIndex] is the index of the start of the link within [line]
 			// [length] is the length of the each link within [line]. It is splitted into multiple links by blank space.
@@ -45,44 +46,43 @@ export function activate(context: vscode.ExtensionContext) {
 			});
 
 			// remove the element of the data which is a path if it is not an absolute path from the links map object
-			const absoluteLinks = links.filter((e) => {
-				if (e.data.indexOf('/') !== 0) {
-					return false;
+			const absoluteLinks = links.map((e) => {
+				// use regex to extract the path if e.data is in the form of an absolute path maybe surrounded by 'simple quotes', "double quotes", [brackets], (parentheses), {braces}
+				const match = e.data.match(/[\'\"\[\(\{]*(?<path>\/[^\'\"\]\)\}]+)[\'\"\]\)\}]*/);
+				if (match && match.groups && match.groups.path) {
+					return {
+						...e,
+						data: match.groups.path
+					};
 				}
-				return true;
-			});
-			
+				return null;
+			}).filter(e => e !== null);
 
 			return absoluteLinks;
-
-
-
-			
-				// return [{
-				// 	startIndex: 0,
-				// 	length: context.line.length,
-				// 	tooltip: 'Click to open file',
-				// 	data: context.line,
-				// }];
-				
 		},
-		handleTerminalLink: async (link: CustomTerminalLink) => {
 
+		handleTerminalLink: async (link: CustomTerminalLink) => {
 			// [link] is the link that was clicked
 			// [link.data] is the data that was passed to the link when it was created
 			console.log('--> link:', link);
 			console.log('--> vscode.workspace:', vscode.workspace);
 			console.log('--> getAbsolutePath(link.data)');
 
-			const mapper: Array<{match: string, replace: string}> = vscode.workspace.getConfiguration().get('path-mapper') ?? [];
+			let mapper: Array<{ match: string, replace: string }> = vscode.workspace.getConfiguration().get('path-mapper') ?? [];
+			console.log('mapper: ', mapper);
+			// Resolve workspaceFolder variable
+			mapper = mapper.map((e) => {
+				return {
+					match: e.match.replace(/\${workspaceFolder}/g, workspaceFolder),
+					replace: e.replace.replace(/\${workspaceFolder}/g, workspaceFolder)
+				};
+			});
+			console.log('mapper: ', mapper);
 
 			// console.log('mapper[0]: ', mapper[0]);
 			// console.log('mapper[1]: ', mapper[1]);
 			let path = link.data;
 			// console.log('path: ', path);
-
-			
-
 
 			const found: number = mapper.findIndex((e) => {
 				// console.log('match: ', e.match);
@@ -95,12 +95,13 @@ export function activate(context: vscode.ExtensionContext) {
 
 			// console.log('found: ', found);
 			let replaced: string = '';
-			if ( found === -1 ) {
+			if (found === -1) {
 				replaced = path;
 			} else {
-			const map = mapper[found];
-			// console.log('map: ', map);
-			 replaced = path.replace(map.match, map.replace);
+				const map = mapper[found];
+				// console.log('map: ', map);
+
+				replaced = path.replace(map.match, map.replace);
 			}
 			console.log('replaced: ', '[' + replaced + ']');
 			vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(replaced));
@@ -113,7 +114,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // Generate an absolute path from a relative path
- function getAbsolutePath(fileUri: string) {
+function getAbsolutePath(fileUri: string) {
 	// Get the current workspace folder
 	const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
 
