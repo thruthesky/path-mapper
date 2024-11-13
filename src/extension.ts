@@ -69,7 +69,6 @@ export function activate(context: vscode.ExtensionContext) {
 			console.log('--> getAbsolutePath(link.data)');
 
 			let mapper: Array<{ match: string, replace: string }> = vscode.workspace.getConfiguration().get('path-mapper') ?? [];
-			console.log('mapper: ', mapper);
 			// Resolve workspaceFolder variable
 			mapper = mapper.map((e) => {
 				return {
@@ -77,7 +76,6 @@ export function activate(context: vscode.ExtensionContext) {
 					replace: e.replace.replace(/\${workspaceFolder}/g, workspaceFolder)
 				};
 			});
-			console.log('mapper: ', mapper);
 
 			// console.log('mapper[0]: ', mapper[0]);
 			// console.log('mapper[1]: ', mapper[1]);
