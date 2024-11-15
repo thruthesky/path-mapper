@@ -26,7 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const workspaceFolder: string = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? "";
 
 	vscode.window.registerTerminalLinkProvider({
-		provideTerminalLinks: (context: vscode.TerminalLinkContext, token: vscode.CancellationToken) => {
+		provideTerminalLinks: (context: vscode.TerminalLinkContext, token: vscode.CancellationToken): any => {
 
 			// [line] is the text of a line that is displayed in the terminal when the user hovers over the link
 			const line: string = context.line;
