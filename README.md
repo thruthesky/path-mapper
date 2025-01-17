@@ -45,3 +45,37 @@ Exmaple: The two paths below are absolute paths and the path mapper will open it
 ```txt
 /Users/thruthesky/tmp/func1/firebase-debug.log /Users/thruthesky/tmp/func1/firebase.json
 ```
+
+## For developers
+
+### How to run the project
+
+1. Open `Run and Debug` from the left most panel.
+2. Click `Run Extension`.
+   1. It will open another VSCode window. It is called `Extension Development Host`. Let's call it `EDH`.
+3. To test the extension,
+   1. Open the settings.json file by `CMD+SHIFT+P` and type `Preferences: Open Settings (JSON)`.
+   2. Input the following settings.
+      ```json
+      "path-mapper": [
+        {
+          "match": "lib/",
+          "replace": "rary/"
+        },
+        {
+          "match": "test/",
+          "replace": "~/tmp/"
+        },
+        {
+          "match": "func1/",
+          "replace": "func2/"
+        }
+      ]
+      ```
+    3. Open the terminal and type the following.
+        ```sh
+        touch ~/tmp/hello.txt
+        echo "Path test: /test/hello.txt ..."
+        ```
+    4. Click the path `/test/hello.txt` in the terminal.
+    5. The file `~/tmp/hello.txt` will be opened.

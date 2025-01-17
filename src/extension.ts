@@ -25,50 +25,38 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const workspaceFolder: string = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? "";
 
+
+	const regex = /(https?:\/\/[^\s]+|(?:~|[a-zA-Z]:)?[\/\\](?:[^\/\\:\*\?<>\|"\s]+[\/\\])*[^\/\\:\*\?<>\|"\s]*|\.{0,2}[\/\\](?:[^\/\\:\*\?<>\|"\s]+[\/\\])*[^\/\\:\*\?<>\|"\s]*)/g;
+
 	vscode.window.registerTerminalLinkProvider({
 		provideTerminalLinks: (context: vscode.TerminalLinkContext, token: vscode.CancellationToken): any => {
+			const matches = [...context.line.matchAll(regex)];
 
-			// [line] is the text of a line that is displayed in the terminal when the user hovers over the link
-			const line: string = context.line;
+			// console.log('matches:', matches);
 
-			// [startIndex] is the index of the start of the link within [line]
-			// [length] is the length of the each link within [line]. It is splitted into multiple links by blank space.
-			// [tooltip] is the text displayed in the hover tooltip
-			// [data] is the data that will be passed to [handleTerminalLink] when the link is clicked
-			// return an array of links
-			const links = line.split(' ').map((word, index) => {
-				return {
-					startIndex: context.line.indexOf(word),
-					length: word.length,
-					tooltip: 'Click to open file: ' + word,
-					data: word,
-				};
-			});
+			return matches.map(match => ({
 
-			// remove the element of the data which is a path if it is not an absolute path from the links map object
-			const absoluteLinks = links.map((e) => {
-				// use regex to extract the path if e.data is in the form of an absolute path maybe surrounded by 'simple quotes', "double quotes", [brackets], (parentheses), {braces}
-				const match = e.data.match(/[\'\"\[\(\{]*(?<path>\/[^\'\"\]\)\}]+)[\'\"\]\)\}]*/);
-				if (match && match.groups && match.groups.path) {
-					return {
-						...e,
-						data: match.groups.path
-					};
-				}
-				return null;
-			}).filter(e => e !== null);
+				startIndex: match.index,
 
-			return absoluteLinks;
+				length: match[0].length,
+
+				// Optional data to use in the handler
+
+				data: match[0]
+
+			}));
 		},
 
 		handleTerminalLink: async (link: CustomTerminalLink) => {
 			// [link] is the link that was clicked
 			// [link.data] is the data that was passed to the link when it was created
-			console.log('--> link:', link);
-			console.log('--> vscode.workspace:', vscode.workspace);
-			console.log('--> getAbsolutePath(link.data)');
+			// console.log('--> link:', link);
+			// console.log('--> vscode.Uri.parse(link.data)', vscode.Uri.parse(link.data));
+			// console.log('--> vscode.workspace:', vscode.workspace);
+			// console.log('--> getAbsolutePath(link.data) :' + getAbsolutePath(link.data));
 
 			let mapper: Array<{ match: string, replace: string }> = vscode.workspace.getConfiguration().get('path-mapper') ?? [];
+			// console.log('workspaceFolder: ', workspaceFolder);
 			// Resolve workspaceFolder variable
 			mapper = mapper.map((e) => {
 				return {
@@ -98,10 +86,21 @@ export function activate(context: vscode.ExtensionContext) {
 			} else {
 				const map = mapper[found];
 				// console.log('map: ', map);
+				// replace without regular expression
+				// replaced = path.replace(map.match, map.replace);
 
-				replaced = path.replace(map.match, map.replace);
+
+				if (path.startsWith('/')) {
+					// Remove leading slash from match if present
+					const matchWithoutSlash = map.match.startsWith('/') ? map.match.substring(1) : map.match;
+					// Remove leading slash from replace if present
+					const replaceWithoutSlash = map.replace.startsWith('/') ? map.replace.substring(1) : map.replace;
+					replaced = path.replace(matchWithoutSlash, replaceWithoutSlash);
+				} else {
+					replaced = path.replace(map.match, map.replace);
+				}
 			}
-			console.log('replaced: ', '[' + replaced + ']');
+			// console.log('path: ' + path, 'replaced: ' + replaced, 'vscode.Uri.parse(replaced): ' + vscode.Uri.parse(replaced));
 			vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(replaced));
 
 		}
