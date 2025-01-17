@@ -9,12 +9,12 @@ Add the following to your settings:
 ```json
 "path-mapper": [
   {
-    "match": "lib/",
-    "replace": "rary/"
+    "match": "~/",
+    "replace": "/Users/your-account/"
   },
   {
     "match": "test/",
-    "replace": "temp/"
+    "replace": "~/tmp/"
   },
   {
     "match": "func1/",
